@@ -128,6 +128,7 @@ command = ${JSON.stringify(process.execPath)}
 cwd = ${JSON.stringify(join(root, "work"))}
 args = ${JSON.stringify([playwright, "--headless", "--isolated", "--browser", "chromium", "--block-service-workers", "--init-page", browserPolicy, "--allowed-origins", `${target.origin};https://cdn.shopify.com;https://fonts.shopifycdn.com`])}
 enabled_tools = ["browser_navigate", "browser_snapshot", "browser_resize", "browser_console_messages", "browser_network_requests"]
+default_tools_approval_mode = "approve"
 startup_timeout_sec = 30
 tool_timeout_sec = 60
 required = true
