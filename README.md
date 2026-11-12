@@ -16,4 +16,6 @@ Run Store Skills' paid Comprehensive Shopify Audit on GitHub-hosted Linux. The a
 
 The action needs read-only GitHub permissions. Browser evidence comes from anonymous navigation, viewport changes, accessibility snapshots, and console and request observations. Checks requiring cart or checkout actions, authenticated access, analytics, screenshots, or other missing evidence can record a Check-specific limitation. The runner keeps the job's Glue customer credential in the catalog-fetch step and uses the official Codex action's API proxy for model authentication.
 
+To use a trusted OpenAI-compatible model provider, pass its Responses API URL as `responses-api-endpoint` and its model ID as `model`. Supply that provider's credential as `openai-api-key`. A protected Vercel Glue deployment can use `vercel-protection-bypass` for the catalog step. Its skill installation step also needs the deployment's protection header.
+
 Run `npm ci --ignore-scripts` and `npm test` on Node 24 to verify the runner's catalog and report handling.

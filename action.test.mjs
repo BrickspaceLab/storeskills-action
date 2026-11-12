@@ -16,10 +16,11 @@ const body = (id, version = 1) =>
   `---\nid: ${id}\nversion: ${version}\nstatus: active\ncategory: experience\n---\n# ${id}\n`;
 
 function server(callTool) {
-  return glueClient(endpoint, "test-token", async (url, init) => {
+  const request = async (url, init) => {
     assert.equal(url, endpoint);
     assert.equal(init.redirect, "error");
     assert.equal(init.headers.Authorization, "Bearer test-token");
+    assert.equal(init.headers["x-vercel-protection-bypass"], "test-protection");
     const { id, method, params } = JSON.parse(init.body);
     let result;
     switch (method) {
@@ -38,6 +39,10 @@ function server(callTool) {
         assert.fail(`Unexpected MCP method ${method}`);
     }
     return Response.json({ jsonrpc: "2.0", id, result });
+  };
+  return glueClient(endpoint, "test-token", {
+    request,
+    vercelBypass: "test-protection",
   });
 }
 
@@ -78,11 +83,9 @@ test("fetches every active Check across catalog pages and retries deferred bodie
 });
 
 test("stops when the subscription cannot read Checks or the catalog changes", async () => {
-  const noAccess = glueClient(
-    endpoint,
-    "test-token",
-    async () => new Response(null, { status: 403 }),
-  );
+  const noAccess = glueClient(endpoint, "test-token", {
+    request: async () => new Response(null, { status: 403 }),
+  });
   await assert.rejects(
     collectCatalog(noAccess, () => assert.fail()),
     /denied MCP access/,

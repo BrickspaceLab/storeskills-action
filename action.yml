@@ -7,6 +7,15 @@ inputs:
   storefront-url:
     description: Public HTTPS storefront or deployed preview URL.
     required: true
+  model:
+    description: Optional Codex model ID.
+    required: false
+  responses-api-endpoint:
+    description: Optional trusted Responses API endpoint for the supplied model credential.
+    required: false
+  vercel-protection-bypass:
+    description: Optional Vercel automation secret for the protected Glue MCP endpoint.
+    required: false
 runs:
   using: composite
   steps:
@@ -23,6 +32,7 @@ runs:
       env:
         STOREFRONT_URL: ${{ inputs.storefront-url }}
         HAS_OPENAI_KEY: ${{ inputs.openai-api-key != '' }}
+        GLUE_MCP_VERCEL_BYPASS: ${{ inputs.vercel-protection-bypass }}
       run: node audit.mjs prepare
     - name: Install Chromium
       shell: bash
@@ -42,6 +52,8 @@ runs:
         prompt-file: ${{ steps.prepare.outputs.root }}/prompt.md
         codex-args: '["--ephemeral"]'
         openai-api-key: ${{ inputs.openai-api-key }}
+        model: ${{ inputs.model }}
+        responses-api-endpoint: ${{ inputs.responses-api-endpoint }}
         safety-strategy: drop-sudo
         sandbox: workspace-write
     - name: Validate the report and publish the job summary

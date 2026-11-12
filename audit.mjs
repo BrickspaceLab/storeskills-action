@@ -82,7 +82,9 @@ async function prepare(env) {
   );
 
   const checks = await collectCatalog(
-    glueClient(endpoint, env.GLUE_CUSTOMER_TOKEN),
+    glueClient(endpoint, env.GLUE_CUSTOMER_TOKEN, {
+      vercelBypass: env.GLUE_MCP_VERCEL_BYPASS,
+    }),
     async ({ id }, markdown) => {
       await writeFile(join(root, "checks", `${id}.md`), markdown, {
         flag: "wx",

@@ -25,7 +25,11 @@ export function mcpEndpoint(value) {
   return url;
 }
 
-export function glueClient(endpoint, token, request = fetch) {
+export function glueClient(
+  endpoint,
+  token,
+  { request = fetch, vercelBypass } = {},
+) {
   let id = 0;
   async function rpc(method, params) {
     const notification = method === "notifications/initialized";
@@ -44,6 +48,7 @@ export function glueClient(endpoint, token, request = fetch) {
         "Content-Type": "application/json",
         Accept: "application/json, text/event-stream",
         "MCP-Protocol-Version": protocol,
+        ...(vercelBypass ? { "x-vercel-protection-bypass": vercelBypass } : {}),
       },
       body: JSON.stringify(message),
     });
