@@ -1,0 +1,62 @@
+name: Comprehensive Shopify Audit
+description: Run the paid Store Skills audit against a reachable Shopify storefront.
+inputs:
+  openai-api-key:
+    description: OpenAI project API key for the Codex runner.
+    required: true
+  storefront-url:
+    description: Public HTTPS storefront or deployed preview URL.
+    required: true
+runs:
+  using: composite
+  steps:
+    - name: Install audit runner dependencies
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        GLUE_CUSTOMER_TOKEN: ""
+      run: npm ci --ignore-scripts --no-audit --no-fund
+    - name: Read the active catalog from Store Skills MCP
+      id: prepare
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        STOREFRONT_URL: ${{ inputs.storefront-url }}
+        HAS_OPENAI_KEY: ${{ inputs.openai-api-key != '' }}
+      run: node audit.mjs prepare
+    - name: Install Chromium
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        GLUE_CUSTOMER_TOKEN: ""
+      run: node node_modules/playwright/cli.js install chromium
+    - name: Run Comprehensive Shopify Audit
+      uses: openai/codex-action@13e9c17417b29e9a276f73ec6ed7fb574137d3c3
+      env:
+        GLUE_CUSTOMER_TOKEN: ""
+        GLUE_MCP_URL: ""
+      with:
+        codex-version: 0.167.2
+        codex-home: ${{ steps.prepare.outputs.root }}/codex
+        working-directory: ${{ steps.prepare.outputs.root }}/work
+        prompt-file: ${{ steps.prepare.outputs.root }}/prompt.md
+        codex-args: '["--ephemeral"]'
+        openai-api-key: ${{ inputs.openai-api-key }}
+        safety-strategy: drop-sudo
+        sandbox: workspace-write
+    - name: Validate the report and publish the job summary
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        GLUE_CUSTOMER_TOKEN: ""
+        AUDIT_ROOT: ${{ steps.prepare.outputs.root }}
+      run: node audit.mjs validate
+    - name: Upload Comprehensive Shopify Audit
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+      env:
+        GLUE_CUSTOMER_TOKEN: ""
+      with:
+        name: comprehensive-shopify-audit
+        path: ${{ steps.prepare.outputs.root }}/artifact
+        if-no-files-found: error
+        retention-days: 7

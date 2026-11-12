@@ -1,0 +1,16 @@
+{
+  "name": "storeskills-action",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@playwright/mcp": "0.0.85",
+    "ajv": "8.20.0",
+    "yaml": "2.9.1"
+  }
+}
