@@ -9,6 +9,10 @@ const categories = new Set([
   "technical",
 ]);
 const checkId = /^[a-z0-9][a-z0-9._-]*$/;
+const singleValue = (value) =>
+  Array.isArray(value) && value.length === 1 && typeof value[0] === "string"
+    ? value[0]
+    : undefined;
 
 export function mcpEndpoint(value) {
   const url = new URL(value);
@@ -126,8 +130,8 @@ export async function collectCatalog(client, saveCheck) {
       throw new Error("Store Skills MCP returned an inconsistent catalog.");
     }
     for (const { page, path, title, fields } of result.pages) {
-      const id = fields?.id;
-      const version = Number(fields?.version);
+      const id = singleValue(fields?.id);
+      const version = Number(singleValue(fields?.version));
       if (
         typeof id !== "string" ||
         !checkId.test(id) ||

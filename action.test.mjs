@@ -10,7 +10,7 @@ const entry = (id) => ({
   page: id,
   title: id,
   path: `comprehensive-checks/${id}.md`,
-  fields: { id, version: "1" },
+  fields: { id: [id], version: ["1"] },
 });
 const body = (id, version = 1) =>
   `---\nid: ${id}\nversion: ${version}\nstatus: active\ncategory: experience\n---\n# ${id}\n`;
@@ -106,6 +106,21 @@ test("stops when the subscription cannot read Checks or the catalog changes", as
       ),
     /HTTPS MCP endpoint/,
   );
+});
+
+test("rejects a Check with more than one indexed ID or version", async () => {
+  for (const [key, values] of [["id", ["a", "b"]], ["version", ["1", "2"]]]) {
+    const check = entry("a");
+    check.fields[key] = values;
+    const client = server((name) => {
+      assert.equal(name, "find_checks");
+      return { total: 1, pages: [check] };
+    });
+    await assert.rejects(
+      collectCatalog(client, () => assert.fail()),
+      /invalid or duplicate Check/,
+    );
+  }
 });
 
 test("validates every selected Check and its Issue and Limitation references", () => {
